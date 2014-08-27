@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  stdio.h
+ *       Filename:  test_string.c
  *
- *    Description:  标准IO的操作，包括格式化输入输出
+ *    Description:  
  *
  *        Version:  1.0
- *        Created:  2014年08月26日 21时37分56秒
+ *        Created:  2014年08月27日 20时15分31秒
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,17 +16,18 @@
  * =====================================================================================
  */
 
-#ifndef STDIO_H
-#define STDIO_H
+#include <stdio.h>
+#include "string.h"
+#include <stdlib.h>
 
-typedef int FILE
+#define N 100
 
-#define EOF (-1)
+int main(int argc, char *argv[])
+{
+	char s[N] = "test the string.h!";
 
-#define stdin  ((FILE*)0)
-#define stdout ((FILE*)1)
-#define stderr ((FILE*)2)
+	int ret = strlen(s);
 
-
-#endif //STDIO_H
-
+	printf("%d\n", ret);
+	return EXIT_SUCCESS;
+}
