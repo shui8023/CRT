@@ -42,6 +42,13 @@ char *strcpy(char *s1, const char *s2);
 char *strncpy(char *s1, const char *s2, size_t n);
 
 /*
+ *概述：对s1指向的串和s2指向的串进行比较
+ *返回值：当s1指向的串大于，等于或者小于s2指向的串是，返回一个大于，等于或者小于零的整数
+ */
+int strcmp(const char *s1, const char *s2);
+
+
+/*
  *概述：从s2指向的对象中复制n个字符到s1指向的对象中
  *返回值：返回s1的值
  */

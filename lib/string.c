@@ -75,9 +75,9 @@ char *strncpy(char *s1, const char *s2, size_t n)
 void *memcpy(void *s1, const void *s2, size_t n)
 {
 	 char *s = s1;
-
+	 char *sc = s2;
 	 for (s = s1; n > 0; --n) {
-	 	*s++ = *s2++;
+	 	*s++ = *sc++;
 	 }
 	 return s1;
 }
@@ -104,4 +104,19 @@ void *memset(void *s, int c, size_t n)
 	}
 
 	return s;
+}
+
+/*
+ *概述：对s1指向的串和s2指向的串进行比较
+ *返回值：当s1指向的串大于，等于或者小于s2指向的串是，返回一个大于，等于或者小于零的整数
+ */
+int strcmp(const char *s1, const char *s2)
+{
+	for (; *s1 == *s2; ++s1, ++s2) {
+		if (*s1 == '\0') {
+			return 0;
+		}
+	}
+
+	return (*(unsigned char *)s1 < *(unsigned char *)s2)? -1: 1;
 }
