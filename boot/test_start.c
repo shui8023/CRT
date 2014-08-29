@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_stdio.c
+ *       Filename:  test_start.c
  *
- *    Description:  
+ *    Description:  测试入口函数的函数
  *
  *        Version:  1.0
- *        Created:  2014年08月29日 00时52分13秒
+ *        Created:  2014年08月26日 20时44分44秒
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,17 +16,7 @@
  * =====================================================================================
  */
 
-#include "stdio.h"
-#include "string.h"
-
 int crt_main(int argc, char *argv[])
 {
-	int ret;
-	char message[] = "test the printf!\n";
-
-	ret = strlen(message);
-	printf("%d%s", ret, message);
-
-	return 0;
+	while (1);
 }
-
