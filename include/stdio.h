@@ -19,7 +19,7 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-typedef int FILE
+typedef int FILE;
 
 #define EOF (-1)
 
@@ -53,11 +53,30 @@ int fwrite(const void *buffer, int size, int count, FILE *stream);
  */
 int fclose(FILE *fd);
 
+
 /*
  *概述：移动文件指针的位置
  */
 
 int fseek(FILE *fp, int offset, int set);
+
+#define va_list char*
+#define va_start(ap, arg) \
+	(ap = (va_list)&arg + sizeof(arg))
+#define va_arg(ap, t) 	\
+	(*(t*)((ap += sizeof(t)) - sizeof(t)))
+#define va_end(ap) 	\
+	(ap = (va_list)0)
+
+int fputc(int c, FILE *stream);
+
+int fputs(const char *str, FILE *stream);
+
+int printf(const char *format, ...);
+
+int vfprintf(FILE *stream, const char *format, va_list arglist);
+
+int fprintf(FILE *stream, const char *format, ...);
 
 #endif //STDIO_H
 

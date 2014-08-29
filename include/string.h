@@ -19,7 +19,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-typedef unsigned size_t 
+typedef unsigned size_t;
 
 #define NULL 	0x0
 
@@ -65,4 +65,10 @@ void *bzero(char *s1);
  *返回值：返回s的值
  */
 void *memset(void *s, int c, size_t n);
+
+/*
+ *概述：将数字转化为字符串
+ *返回值：返回指向字符串的指针
+ */
+char *itoa(int n, char *str, int radix);
 #endif //STRING_H

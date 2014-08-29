@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#include "stdio.h"
-#include "string.h"
+#include "../include/stdio.h"
+#include "../include/string.h"
 
 
 /*概述：打开一个文件
@@ -89,8 +89,8 @@ static int seek(int fd, int offset, int mode)
 	asm ("movl $19, %%eax \n\t"
 	     "movl %1, %%ebx \n\t"
 	     "movl %2, %%ecx \n\t"
-	     "movl %3, %%edx \n\t"
-	     "=m"(ret):"m"(fd), "m"(offset), "m"(mode)
+	     "movl %3, %%edx \n\t":
+	     "=m"(ret):"m"(fd),"m"(offset),"m"(mode)
 	     );
 
 	return ret;
@@ -114,7 +114,7 @@ FILE * fopen(const char *filename, const char *mode)
 #define O_TRUNC  01000
 #define O_APPEND 02000
 
-	if (strcpm(mode, "w") == 0) {
+	if (strcmp(mode, "w") == 0) {
 		flags |= O_WRONLY | O_CREAT | O_TRUNC;
 	}
 
@@ -178,4 +178,109 @@ int fseek(FILE *fp, int offset, int set)
 	return seek((int)fp, offset, set);
 }
 
+
+int fputc(int c, FILE *stream)
+{
+	if (fwrite(&c, 1, 1, stream) != 1)  {
+		return EOF;
+	} else {
+		return c;
+	}
+}
+
+int fputs(const char *str, FILE *stream)
+{
+	int len = strlen(str);
+
+	if (fwrite(str, 1, len, stream) != len) {
+		return EOF;
+	} else {
+		return len;
+	}
+}
+
+int 
+printf(const char *format, ...)
+{
+	va_list arg_start;
+	va_start(arg_start, format);
+
+	return vfprintf(stdout, format, arg_start);
+
+}
+
+int  vfprintf(FILE *stream, const char *format, va_list arg_start)
+{
+	int number = 0 ;
+	int flags = 0;
+	const char *p;
+	for (p = format; *p != '\0'; ++p) {
+		switch (*format) {
+			case '%': {
+				if (!flags) {
+					flags = 1;
+				} else {
+					if (fputc('%', stream) < 0) {
+						return EOF;
+					}
+					++number;
+					flags = 0;
+				}
+				break;
+			}
+			case 'd': {
+				if (flags) {
+					char buf[16];
+					flags = 0;
+					itoa(va_arg(arg_start, int), buf, 10);
+					if (fputs(buf, stream) < 0) {
+						return EOF;
+					}
+					number += strlen(buf);
+				} else if (fputc('c', stream) < 0) {
+					return EOF;
+				} else {
+					++number;
+				}
+				break;
+			}
+			case 's': {
+				if (flags) {
+					const char *str = va_arg(arg_start, const char *);
+					flags = 0;
+					if (fputs(str, stream) < 0) {
+						return EOF;
+					}
+					number += strlen(str);
+				} else if (fputc('s', stream) < 0) {
+					return EOF;
+				} else {
+					++number;
+				}
+				break;
+			}
+			default : {
+				if (flags) {
+					flags = 0;
+				}	  
+
+				if (fputc(*p, stream) < 0) {
+					return EOF;
+				} else {
+					++number;
+				}
+				break;
+			}
+		}
+	}	
+
+	return number;
+}
+
+int fprintf(FILE *stream, const char *format, ...)
+{
+	va_list arg_start;
+	va_start(arg_start, format);
+	return vfprintf(stream, format, arg_start);
+}
 

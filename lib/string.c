@@ -75,7 +75,7 @@ char *strncpy(char *s1, const char *s2, size_t n)
 void *memcpy(void *s1, const void *s2, size_t n)
 {
 	 char *s = s1;
-	 char *sc = s2;
+	 const char *sc = s2;
 	 for (s = s1; n > 0; --n) {
 	 	*s++ = *sc++;
 	 }
@@ -120,3 +120,50 @@ int strcmp(const char *s1, const char *s2)
 
 	return (*(unsigned char *)s1 < *(unsigned char *)s2)? -1: 1;
 }
+
+/*
+ *概述：将数字转化为字符串
+ *返回值：返回指向字符串的指针
+ */
+char *itoa(int n, char *str, int radix)
+{
+	char  digit[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	char *p = str;
+	char *head = str;
+
+	if (!p || radix < 2 || radix > 36) {
+		return p;
+	}
+
+	if (radix != 10 && n < 0) {
+		return p;
+	}
+
+	if (n == 0) {
+		*p++ = '0';
+		*p = 0;
+		return p;
+	}
+
+	if (radix == 10 && n < 0) {
+		*p++ = '-';
+		n = -n;
+	}
+
+	while (n) {
+		*p++ = digit[n % radix];
+		n /= radix;
+	}
+
+	*p = 0;
+
+	for (--p; head < p; ++head, --p) {
+		char temp = *head;
+		*head = *p;
+		*p = temp;
+	}
+
+	return str;
+}
+
+
