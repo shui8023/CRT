@@ -215,7 +215,7 @@ int  vfprintf(FILE *stream, const char *format, va_list arg_start)
 	int flags = 0;
 	const char *p;
 	for (p = format; *p != '\0'; ++p) {
-		switch (*format) {
+		switch (*p) {
 			case '%': {
 				if (!flags) {
 					flags = 1;

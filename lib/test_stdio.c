@@ -22,10 +22,11 @@
 int crt_main(int argc, char *argv[])
 {
 	int ret;
-	char message[] = "test the printf!\n";
 
+	char message[] = "test the printf!\n";
 	ret = strlen(message);
-	printf("%d%s", ret, message);
+	int number = 19;
+	printf("%d\n%d\n%s\n", ret, number, message);
 
 	return 0;
 }
