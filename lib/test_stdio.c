@@ -27,7 +27,7 @@ int crt_main(int argc, char *argv[])
 	ret = strlen(message);
 	int number = 19;
 	printf("%d\n%d\n%s\n", ret, number, message);
-
+	printf("%d%s", argc, argv[1]);
 	return 0;
 }
 

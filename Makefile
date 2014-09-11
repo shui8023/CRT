@@ -18,7 +18,7 @@ mv:
 	mv *.o ./bin
 .PHONY:clean
 clean:
-	rm -f *.o a.out
+	rm -f bin/*.o a.out
 
 
 
