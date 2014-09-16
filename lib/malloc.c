@@ -62,6 +62,38 @@ static char *  heap_list;
 #define PREV_BLKP(bp) 	\
 	((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
 
+#define ADDR_HEAP(base, heap_size) 	\
+	(((char *)(base)) + heap_size)
+
+
+
+static int brk(void * end_data_segment)
+{
+	int ret = 0;
+	asm ("movl $45, %%eax \n\t"
+	     "movl %1, %%ebx \n\t"
+	     "int $0x80 \n\t"
+	     "movl %%eax, %0 \n\t"
+	     :"=r"(ret):"m"(end_data_segment));
+
+	return ret;
+}
+
+
+
+static void * sbrk(size_t size)
+{
+	void * base_heap_addr = (void *)brk(0);
+	void * end_heap_addr = ADDR_HEAP(base_heap_addr, size);
+	end_heap_addr = (void *)brk(end_heap_addr);
+
+	if (!end_heap_addr) {
+		return 0;
+	}
+
+	return end_heap_addr;
+}
+
 /*
  *概述：回收堆中的空闲地址
  *
@@ -107,7 +139,7 @@ static void *extend_heap(size_t words)
 
 	//判断是奇数或者偶数
 	size = (words % 2) ? (words + 1) * WSIZE : words *WSIZE;
-	if ((long)(bp = brk(size)) == -1) {
+	if ((long)(bp = sbrk(size)) == -1) {
 		return NULL;
 	}
 
@@ -127,14 +159,14 @@ static void *extend_heap(size_t words)
  */
 int mm_init(void)
 {
-	if ((heap_list = brk(4*WSIZE)) == (void *) -1) {
+	if ((heap_list = sbrk(4*WSIZE)) == (void *) -1) {
 		return -1;
 	}
 
 	PUT(heap_list, 0); 				//PUT是初始化
-	PUT(heap_list + (1*WSIZE), PACK(DSIZE, 1));  	//头部的	
-	PUT(heap_list + (2*WSIZE), PACK(DSIZE, 1));  	//尾部的
-	PUT(heap_list + (3*WSIZE), PACK(0, 1)); 	//尾部的
+	PUT(heap_list , PACK(DSIZE, 1) - WSIZE);  	//头部的	
+	PUT(heap_list , PACK(DSIZE, 1) - 2 * WSIZE);  	//尾部的
+	PUT(heap_list , PACK(0, 1) - 3 * WSIZE); 	//尾部的
 	heap_list += (2*WSIZE);
 
 	if (extend_heap(CHUNKSIZE/WSIZE) == NULL)  {
@@ -149,7 +181,7 @@ int mm_init(void)
  *概述：释放内存
  *返回值：无
  */
-void free(void *ptr)
+void free(void *bp)
 {
 	size_t size = GET_SIZE(HDRP(bp));
 	PUT(HDRP(bp), PACK(size, 0));
@@ -158,18 +190,21 @@ void free(void *ptr)
 	coalesce(bp);
 }
 
+/*
+ *概述：首次适配
+ *
+ */
 static void * find_fit(unsigned size) 
 {
-	char * block;
 	char *heap_listp = heap_list;
 	unsigned block_size = GET_SIZE(heap_listp);
 	int block_flag = GET_ALLOC(heap_listp);
 	
-	for (; block_size != 0 && block_flag == 0; ;) {
+	for (; block_size != 0 && block_flag == 0; ) {
 		if (block_size >= size) {
-			return heap_listp;
+			return heap_listp + 4;
 		} else {
-			heap_listp = NEXT_BLKP(bp);
+			heap_listp = NEXT_BLKP(heap_listp);
 			block_size = GET_SIZE(heap_listp);
 			block_flag = GET_ALLOC(heap_listp);
 		}
@@ -178,15 +213,24 @@ static void * find_fit(unsigned size)
 	return NULL;
 }
 
+/*
+ *概述：分割函数
+ *
+ */
 
 static void place(char *bp, unsigned size)
 {
-	unsigned block_size = GET_SISE(bp);
+	unsigned block_size = GET_SIZE(bp);
 	
 	if (block_size == size) {
 		return ;
 	} else {
-		
+		char * block_start = HDRP(bp);
+		char * block_end = FTRP(bp);
+		PUT(block_start, PACK(size, 0x1));
+		PUT(block_start , PACK(size, 0x1) - size + WSIZE);
+		PUT(block_start , PACK(block_size - size, 0x0) - size);
+		PUT(block_end, PACK(block_size - size, 0x0));
 	}
 }
 
@@ -212,7 +256,7 @@ void *malloc(unsigned  size)
 
 	if ((bp = find_fit(asize)) != NULL) {
 		place(bp, asize);
-		returm bp;
+		return bp;
 	}
 
 	extendsize = MAX(asize, CHUNKSIZE);
