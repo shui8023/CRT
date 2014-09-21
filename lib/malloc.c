@@ -18,8 +18,8 @@
 
 #include "malloc.h"
 
-/*概述：指向了空闲区域的序言块;
- *
+/*概述：指向了空闲区域的序言块,就是指空闲块的头部的下面，头部和尾部都是4个字节
+ *下面的bp都是这样的
  */
 static char *  heap_list;
 
@@ -79,19 +79,25 @@ static int brk(void * end_data_segment)
 	return ret;
 }
 
+int heap_size;
 
 
 static void * sbrk(size_t size)
 {
 	void * base_heap_addr = (void *)brk(0);
+		
+	
 	void * end_heap_addr = ADDR_HEAP(base_heap_addr, size);
+
 	end_heap_addr = (void *)brk(end_heap_addr);
+	heap_size += size;
 
 	if (!end_heap_addr) {
-		return 0;
+		return NULL;
 	}
+	end_heap_addr += heap_size;
 
-	return end_heap_addr;
+	return end_heap_addr - size + WSIZE;
 }
 
 /*
@@ -139,13 +145,17 @@ static void *extend_heap(size_t words)
 
 	//判断是奇数或者偶数
 	size = (words % 2) ? (words + 1) * WSIZE : words *WSIZE;
-	if ((long)(bp = sbrk(size)) == -1) {
+	/*
+	 *bp返回的是什么值，返回的是首地址，其实就是头部的地址
+	 */
+	if ((bp = sbrk(size)) == NULL) {
 		return NULL;
 	}
 
 	PUT(HDRP(bp), PACK(size, 0));  		//初始化头部
-	PUT(FTRP(bp), PACK(size, 0)); 		//初始化尾部
-	PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); 	//初始化尾部
+//	PUT(FTRP(bp), PACK(size, 0)); 		//初始化尾部
+	bp += 1016;
+	*(unsigned int *)bp = 1024;
 
 	return coalesce(bp);
 }
@@ -164,16 +174,21 @@ int mm_init(void)
 	}
 
 	PUT(heap_list, 0); 				//PUT是初始化
-	PUT(heap_list , PACK(DSIZE, 1) - WSIZE);  	//头部的	
-	PUT(heap_list , PACK(DSIZE, 1) - 2 * WSIZE);  	//尾部的
-	PUT(heap_list , PACK(0, 1) - 3 * WSIZE); 	//尾部的
-	heap_list += (2*WSIZE);
+	heap_list -= WSIZE;
+	PUT(heap_list, PACK(WSIZE, 1));  	//头部的	
+	heap_list += 3 * WSIZE;
+	PUT(heap_list, PACK(WSIZE, 1));  	//尾部的
+	heap_list -= (3 * WSIZE);
 
-	if (extend_heap(CHUNKSIZE/WSIZE) == NULL)  {
+	/*
+	 *this is a bug
+	 *
+	 */
+	if (extend_heap(1024) == NULL)  {
 		return -1;
 	}
 
-	return  0;
+	return  1;
 }
 
 
