@@ -51,4 +51,11 @@ void free(void *ptr);
  */
 void *malloc(unsigned  size);
 
+/*
+ *
+ *
+ */
+int mm_init(void);
+
+
 #endif //MALLOC_H

@@ -18,6 +18,8 @@
 
 extern int crt_main(int argc, char *argv[]);
 
+#include "malloc.h"
+
 void exit(int exitcode);
 
 void _start(void)
@@ -32,7 +34,9 @@ void _start(void)
 	
 	argc = *(int *)(ebp_reg + 4);
 	argv = (char **)(ebp_reg + 8);
-
+	if (!mm_init()) {
+		exit(1);
+	}
 	ret = crt_main(argc,  argv);
 	
 	exit(ret);
