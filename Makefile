@@ -21,7 +21,7 @@ clean:
 	rm -f bin/*.o a.out
 .PHONY:ld
 ld:
-	ld bin/stdio.o  bin/malloc.o  bin/string.o  bin/test_stdio.o  bin/crt_entry.o  -static  -m elf_i386 -T tool/ld.lds
+	ld bin/stdio.o  bin/malloc.o  bin/string.o  bin/test_stdio.o  bin/crt_entry.o  -static  -m elf_i386 -e _start
 
 
 

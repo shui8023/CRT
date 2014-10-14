@@ -34,9 +34,9 @@ void _start(void)
 	
 	argc = *(int *)(ebp_reg + 4);
 	argv = (char **)(ebp_reg + 8);
-	if (!mm_init()) {
-		exit(1);
-	}
+//	if (!mm_init()) {
+//		exit(1);
+//	}
 	ret = crt_main(argc,  argv);
 	
 	exit(ret);

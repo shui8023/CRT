@@ -174,31 +174,38 @@ static void *extend_heap(size_t words)
  *返回值：返回0,正确初始化，返回1,不能正确的初始化环境
  *
  */
+#define ADDR_ADD(a, 0) (((char *)a) + o)
+
 int mm_init(void)
 {
 	/*首先申请了16个字节，也就是4个字
 	 *标示为已用
 	 *
 	 */
-	if ((heap_list = sbrk(3*WSIZE)) == (void *) -1) {
-		return -1;
-	}
+//	if ((heap_list = sbrk(11)) == (void *) -1) {
+//		return -1;
+//	}
+	void *base = NULL;
+ 	unsigned heap_size = 1024 * 1024 * 32;
+	base = (void *)brk(0);
+	void *end = ADDR_ADD(base, heap_size);
+	end = (void *)brk(end);
 
 	PUT(heap_list, 0); 				//PUT是初始化
-	PUT(heap_list, PACK(0, 1));  	//头部的	
+	PUT(heap_list, PACK(1024 * 1024 * 32, 1));  	//头部的	
 	heap_list +=  WSIZE;
-	PUT(heap_list, PACK(0, 1));  	//尾部的
+	PUT(heap_list, PACK(1024 * 1024 * 32, 1));  	//尾部的
 	heap_list +=  WSIZE;
 	PUT(heap_list, PACK(0, 0));
-	heap_list -= (3 * WSIZE);
+	heap_list -= (2 * WSIZE);
 
 	/*
 	 *this is a bug
 	 *
 	 */
-	if (extend_heap(256) == NULL)  {
-		return -1;
-	}
+//	if (extend_heap(256) == NULL)  {
+//		return -1;
+//	}
 
 	return  1;
 }
@@ -227,7 +234,10 @@ static void * find_fit(unsigned size)
 	unsigned block_size = GET_SIZE(heap_listp);
 	int block_flag = GET_ALLOC(heap_listp);
 	
-	for (; block_size != 0 && block_flag == 0; ) {
+	for (; block_size != 0; ) {
+		if (block_flag == 1) {
+			continue;
+		}
 		if (block_size >= size) {
 			return heap_listp + 4;
 		} else {
